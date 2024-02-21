@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+       
+    </style>
+</head>
+<body>
+    <header>
+        
+    </header>
+
+    <div class="quiz-container" id="quiz-container">
+        <h1>Welcome to the Quiz!</h1>
+
+        <div id="score">Score: <span id="score-value">0</span></div>
+
+        <div class="question">
+            <p id="question-text">1. What does LTFRB stand for?</p>
+        </div>
+
+        <div class="choices" id="choices">
+            <div class="choice" id="choice1">
+                <input type="radio" id="radio_choice1" name="choices">
+                <label for="radio_choice1">Lottery</label>
+            </div>
+            <div class="choice" id="choice2">
+                <input type="radio" id="radio_choice2" name="choices">
+                <label for="radio_choice2">Land Transportation Franchising and Regulatory Board</label>
+            </div>
+            <div class="choice" id="choice3">
+                <input type="radio" id="radio_choice3" name="choices">
+                <label for="radio_choice3">Long-Term Fiscal Reform and Balance</label>
+            </div>
+            <div class="choice" id="choice4">
+                <input type="radio" id="radio_choice4" name="choices">
+                <label for="radio_choice4">None of the above</label>
+            </div>
+        </div>
+
+        <div id="answer-feedback"></div>
+
+        <button id="submit-button">Next</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(function() {
+                document.getElementById("quiz-container").style.display = "block";
+            }, 2000); // 2000 milliseconds delay
+        });
+
+        let score = 0; // Initialize score
+        let currentQuestionIndex = 0; // Index of the current question
+        const scoreValue = document.getElementById('score-value');
+        const questionText = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices'); // Add this line
+        const nextBtn = document.getElementById('submit-button');
+
+        const questions = [
+            {
+                question: "What does LTFRB stand for?",
+                type: "multiple_choice",
+                choices: [
+                    "Lottery",
+                    "Land Transportation Franchising and Regulatory Board",
+                    "Long-Term Fiscal Reform and Balance",
+                    "None of the above"
+                ],
+                correctAnswerIndex: 1 // Index of the correct choice
+            },
+            {
+                question: "What does HTML stand for?",
+                type: "multiple_choice",
+                choices: [
+                    "Hyper Text Markup Language",
+                    "Hyperlinks and Text Markup Language",
+                    "Home Tool Markup Language",
+                    "Hyperlinks and Text Markup Leveler"
+                ],
+                correctAnswerIndex: 0 // Index of the correct choice
+            },
+            {
+                question: "Fill in the blank: N stands for",
+                type: "fill_in_the_blank",
+                blanks: 6, // Number of blank spaces
+                answer: "Number" // Correct answer
+            },
+            {
+                question: "What is highly needed when faced with a dangerous situation?",
+                type: "fill_in_the_blank",
+                blanks: 9, // Number of blank spaces
+                answer: "Awareness" // Correct answer
+            }
+        ];
+
+        function showQuestion(index) {
+            const currentQuestion = questions[index];
+            questionText.textContent = `${index + 1}. ${currentQuestion.question}`;
+            choicesContainer.innerHTML = ''; // Clear previous choices
+            document.getElementById('answer-feedback').textContent = ''; // Clear feedback message
+            document.getElementById('answer-feedback').classList.remove('correct-answer'); // Clear feedback message
+
+    
+            if (currentQuestion.type === "multiple_choice") {
+                currentQuestion.choices.forEach((choice, i) => {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'radio');
+                    input.setAttribute('name', 'choices');
+                    input.setAttribute('value', choice);
+                    input.setAttribute('id', `choice${i + 1}`);
+                    const label = document.createElement('label');
+                    label.setAttribute('for', `choice${i + 1}`);
+                    label.textContent = choice;
+                    const choiceDiv = document.createElement('div');
+                    choiceDiv.classList.add('choice');
+                    choiceDiv.appendChild(input);
+                    choiceDiv.appendChild(label);
+                    choicesContainer.appendChild(choiceDiv);
+                });
+            } else if (currentQuestion.type === "fill_in_the_blank") {
+                const inputRow = document.createElement('div');
+                inputRow.classList.add('input-row'); // Add class for flexbox
+                for (let i = 0; i < currentQuestion.blanks; i++) {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'text');
+                    input.setAttribute('maxlength', '1'); // Limit to 1 character
+                    input.classList.add('blank-input');
+                    inputRow.appendChild(input);
+                }
+                choicesContainer.appendChild(inputRow);
+
+                 // Add event listener for backspace key
+                    const blankInputs = inputRow.querySelectorAll('.blank-input');
+                    blankInputs.forEach((input, index) => {
+                    input.addEventListener('keydown', event => {
+                        if (event.keyCode === 8 && input.value === '') {
+                            // If backspace key is pressed and input is empty,
+                            // delete content of the previous input box
+                            if (index > 0) {
+                                blankInputs[index - 1].focus(); // Move focus to the previous input box
+                                blankInputs[index - 1].value = ''; // Clear content of the previous input box
+                            }
+                        }
+                    });
+              
+
+                    input.addEventListener('input', event => {
+                        const value = event.target.value;
+                        if (value.length > 0 && index < blankInputs.length - 1) {
+                            blankInputs[index + 1].focus(); // Move focus to the next input box
+                        }
+                    });
+                });
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            const selectedChoice = document.querySelector('.choice input[type="radio"]:checked');
+            if (selectedChoice || questions[currentQuestionIndex].type === "fill_in_the_blank") {
+                if (questions[currentQuestionIndex].type === "multiple_choice") {
+                    const choices = Array.from(document.querySelectorAll('.choice input[type="radio"]')); // Convert NodeList to Array
+                    let selectedChoiceIndex = -1;
+                    choices.forEach((choice, index) => {
+                        if (choice.checked) {
+                            selectedChoiceIndex = index;
+                        }
+                    });
+                    
+                    console.log('Selected Choice Index:', selectedChoiceIndex);
+                    console.log('Correct Answer Index:', questions[currentQuestionIndex].correctAnswerIndex);
+                    
+                    if (selectedChoiceIndex === questions[currentQuestionIndex].correctAnswerIndex) {
+                        score++;
+                        scoreValue.textContent = score;
+                        selectedChoice.closest('.choice').classList.add('correct');
+                    } else {
+                        selectedChoice.closest('.choice').classList.add('selected');
+                        choices[questions[currentQuestionIndex].correctAnswerIndex].closest('.choice').classList.add('correct');
+                    }
+                } else {
+                    const userAnswer = Array.from(document.querySelectorAll('.blank-input')).map(input => input.value).join('');
+                    const correctAnswer = questions[currentQuestionIndex].answer.toLowerCase(); // Get correct answer and convert to lowercase
+
+                    console.log('User Answer:', userAnswer);
+                    console.log('Correct Answer:', correctAnswer);
+
+                    if (userAnswer === correctAnswer) {
+                        score++;
+                        scoreValue.textContent = score;
+                        document.querySelectorAll('.blank-input').forEach(input => {
+                            document.getElementById('answer-feedback').textContent = 'Correct!'; // Display correct message
+                            document.getElementById('answer-feedback').classList.add('correct-answer');
+                            
+
+                        });
+                    } else {
+                        document.querySelectorAll('.blank-input').forEach(input => input.classList.add('selected'));
+                        document.getElementById('answer-feedback').textContent = 'Wrong!'; // Display wrong message
+                        document.getElementById('answer-feedback').classList.add('wrong-answer');
+                    }
+                }
+
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    setTimeout(() => {
+                        showQuestion(currentQuestionIndex);
+                    }, 2000);
+                } else {
+                    // Quiz finished
+                    setTimeout(() => {
+                        alert('Quiz Finished! Your Score: ' + score);
+                    }, 2000);
+                    // You can reset the quiz or redirect to another page
+                }
+            } else {
+                alert("Please select an answer!");
+            }
+        });
+
+        // Initial question display
+        showQuestion(currentQuestionIndex);
+    </script>
+</body>
+</html>
